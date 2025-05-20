@@ -1,0 +1,23 @@
+services:
+  mongo-ha:
+    build: .
+    container_name: mongo-ha
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: adminPwd
+      MONGO_REPLICA_SET_NAME: rs0
+    command:
+      [
+        "mongod", "--replSet", "rs0", "--bind_ip_all",
+        "--auth",
+        "--keyFile", "/data/keyfile/mongo-keyfile"
+      ]
+    volumes:
+      - ./mongo-keyfile:/data/keyfile/mongo-keyfile:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --quiet --eval 'db.hello().isWritablePrimary'"]
+      interval: 5s
+      retries: 25
